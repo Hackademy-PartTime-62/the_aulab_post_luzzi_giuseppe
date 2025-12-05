@@ -1,0 +1,51 @@
+/* Bootstrap */
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+/* -------------------------------
+   STILE GLOBAL DEL PROGETTO
+-------------------------------- */
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #f7f7f7;
+}
+
+/* Navbar */
+.navbar .nav-link.active {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+/* Card articoli */
+.card img {
+    object-fit: cover;
+    max-height: 220px;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+/* Tabelle revisore/admin */
+.table th {
+    font-weight: bold;
+}
+
+/* Container principale */
+main .container {
+    max-width: 1140px;
+}
+
+/* Messaggi alert centrati */
+.alert {
+    font-size: 1rem;
+}
+
+/* Pulsanti */
+.btn {
+    border-radius: 6px;
+}
