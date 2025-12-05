@@ -1,4 +1,4 @@
-# The Aulab Post – Proyecto Finale  
+# The Aulab Post – Progetto Finale  
 **Autore:** Luzzi Giuseppe  
 
 The Aulab Post è il progetto finale sviluppato per il corso Full Stack di Aulab.  
