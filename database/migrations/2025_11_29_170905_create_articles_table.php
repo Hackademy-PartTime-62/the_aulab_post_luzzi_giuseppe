@@ -6,19 +6,36 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
+
+            // Informazioni principali dell’articolo
             $table->string('title');
-            $table->string('subtitle');
+            $table->string('subtitle')->nullable();
             $table->text('body');
             $table->string('image')->nullable();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+            // Collegamento all’autore dell’articolo
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+
+            // LO STATO DI REVISIONE (CAMPO MANCANTE PRIMA)
+            $table->boolean('is_accepted')->nullable();
+
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('articles');

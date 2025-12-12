@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
@@ -12,9 +13,14 @@ class ArticleController extends Controller
     // Lista articoli pubblici
     public function index()
     {
-        $articles = Article::where('is_accepted', true)
-            ->latest()
-            ->get();
+        // Se la colonna non esiste, evitiamo l'errore SQL.
+        if (!Schema::hasColumn('articles', 'is_accepted')) {
+            $articles = Article::latest()->get();
+        } else {
+            $articles = Article::where('is_accepted', true)
+                ->latest()
+                ->get();
+        }
 
         return view('articles.index', compact('articles'));
     }
@@ -24,7 +30,7 @@ class ArticleController extends Controller
     {
         // Mostra se accettato oppure se è autore/admin/revisore
         if (
-            !$article->is_accepted &&
+            (!$article->is_accepted && Schema::hasColumn('articles', 'is_accepted')) &&
             !Auth::user()?->is_admin &&
             !Auth::user()?->is_revisor &&
             Auth::id() !== $article->user_id
@@ -43,31 +49,30 @@ class ArticleController extends Controller
 
     // Salvataggio
     public function store(Request $request)
-{
-    $request->validate([
-        'title' => 'required|min:3',
-        'subtitle' => 'required|min:3',
-        'body' => 'required|min:10',
-        'image' => 'nullable|image'
-    ]);
+    {
+        $request->validate([
+            'title' => 'required|min:3',
+            'subtitle' => 'required|min:3',
+            'body' => 'required|min:10',
+            'image' => 'nullable|image'
+        ]);
 
-    $article = Article::create([
-        'title' => $request->title,
-        'subtitle' => $request->subtitle,
-        'body' => $request->body,
-        'user_id' => auth()->id(),
-        'is_accepted' => null, // deve essere revisionato
-    ]);
+        $article = Article::create([
+            'title' => $request->title,
+            'subtitle' => $request->subtitle,
+            'body' => $request->body,
+            'user_id' => auth()->id(),
+            'is_accepted' => Schema::hasColumn('articles', 'is_accepted') ? null : null,
+        ]);
 
-    if ($request->hasFile('image')) {
-        $article->image = $request->file('image')->store('articles', 'public');
-        $article->save();
+        if ($request->hasFile('image')) {
+            $article->image = $request->file('image')->store('articles', 'public');
+            $article->save();
+        }
+
+        return redirect()->route('articles.index')
+            ->with('success', 'Articolo inviato in revisione!');
     }
-
-    return redirect()->route('articles.index')
-        ->with('success', 'Articolo inviato in revisione!');
-}
-
 
     // Form modifica
     public function edit(Article $article)
@@ -90,9 +95,11 @@ class ArticleController extends Controller
 
         $article->update($data);
 
-        // ogni modifica torna "in attesa" se vuoi
-        $article->is_accepted = null;
-        $article->save();
+        // Se la colonna esiste, torna in revisione
+        if (Schema::hasColumn('articles', 'is_accepted')) {
+            $article->is_accepted = null;
+            $article->save();
+        }
 
         return redirect()
             ->route('articles.show', $article)

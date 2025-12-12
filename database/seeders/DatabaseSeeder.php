@@ -2,27 +2,36 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Seeder dei ruoli (admin, writer, revisor)
-        $this->call(RoleSeeder::class);
-
-        // Crea un utente admin di default
-        \App\Models\User::factory()->create([
-            'name' => 'Admin',
+        // CREA UN UTENTE ADMIN
+        User::create([
+            'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
-            'role_id' => 1, // admin
+            'is_admin' => true,
+            'is_revisor' => true,
+            'is_revisor_request' => false,
         ]);
 
-        // Seeder articoli
-        $this->call(ArticleSeeder::class);
+        // CREA UN UTENTE NORMALE
+        User::create([
+            'name' => 'User Demo',
+            'email' => 'user@example.com',
+            'password' => bcrypt('password'),
+            'is_admin' => false,
+            'is_revisor' => false,
+            'is_revisor_request' => false,
+        ]);
+
+        // SEEDER DEGLI ARTICOLI
+        $this->call([
+            ArticleSeeder::class,
+        ]);
     }
 }
