@@ -5,35 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
-    // Lista articoli pubblici
+    /**
+     * Lista articoli pubblici (solo accettati)
+     */
     public function index()
     {
-        // Se la colonna non esiste, evitiamo l'errore SQL.
-        if (!Schema::hasColumn('articles', 'is_accepted')) {
-            $articles = Article::latest()->get();
-        } else {
-            $articles = Article::where('is_accepted', true)
-                ->latest()
-                ->get();
-        }
+        $articles = Article::where('is_accepted', true)
+            ->latest()
+            ->get();
 
         return view('articles.index', compact('articles'));
     }
 
-    // Mostra singolo articolo
+    /**
+     * Mostra singolo articolo
+     */
     public function show(Article $article)
     {
-        // Mostra se accettato oppure se è autore/admin/revisore
+        // Se non è accettato, può vederlo solo autore o admin/revisore
         if (
-            (!$article->is_accepted && Schema::hasColumn('articles', 'is_accepted')) &&
+            $article->is_accepted !== true &&
+            Auth::id() !== $article->user_id &&
             !Auth::user()?->is_admin &&
-            !Auth::user()?->is_revisor &&
-            Auth::id() !== $article->user_id
+            !Auth::user()?->is_revisor
         ) {
             abort(403);
         }
@@ -41,28 +39,32 @@ class ArticleController extends Controller
         return view('articles.show', compact('article'));
     }
 
-    // Form creazione
+    /**
+     * Form creazione articolo
+     */
     public function create()
     {
         return view('articles.create');
     }
 
-    // Salvataggio
+    /**
+     * Salvataggio articolo
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|min:3',
+            'title'    => 'required|min:3',
             'subtitle' => 'required|min:3',
-            'body' => 'required|min:10',
-            'image' => 'nullable|image'
+            'body'     => 'required|min:10',
+            'image'    => 'nullable|image',
         ]);
 
         $article = Article::create([
-            'title' => $request->title,
-            'subtitle' => $request->subtitle,
-            'body' => $request->body,
-            'user_id' => auth()->id(),
-            'is_accepted' => Schema::hasColumn('articles', 'is_accepted') ? null : null,
+            'title'       => $request->title,
+            'subtitle'    => $request->subtitle,
+            'body'        => $request->body,
+            'user_id'     => Auth::id(),
+            'is_accepted' => null, // sempre in revisione
         ]);
 
         if ($request->hasFile('image')) {
@@ -70,11 +72,14 @@ class ArticleController extends Controller
             $article->save();
         }
 
-        return redirect()->route('articles.index')
+        return redirect()
+            ->route('articles.index')
             ->with('success', 'Articolo inviato in revisione!');
     }
 
-    // Form modifica
+    /**
+     * Form modifica
+     */
     public function edit(Article $article)
     {
         $this->authorizeArticle($article);
@@ -82,7 +87,9 @@ class ArticleController extends Controller
         return view('articles.edit', compact('article'));
     }
 
-    // Aggiornamento
+    /**
+     * Aggiornamento articolo
+     */
     public function update(Request $request, Article $article)
     {
         $this->authorizeArticle($article);
@@ -95,18 +102,18 @@ class ArticleController extends Controller
 
         $article->update($data);
 
-        // Se la colonna esiste, torna in revisione
-        if (Schema::hasColumn('articles', 'is_accepted')) {
-            $article->is_accepted = null;
-            $article->save();
-        }
+        // Torna in revisione dopo modifica
+        $article->is_accepted = null;
+        $article->save();
 
         return redirect()
             ->route('articles.show', $article)
             ->with('success', 'Articolo aggiornato e inviato di nuovo alla revisione.');
     }
 
-    // Cancellazione
+    /**
+     * Eliminazione articolo
+     */
     public function destroy(Article $article)
     {
         $this->authorizeArticle($article);
@@ -122,10 +129,13 @@ class ArticleController extends Controller
             ->with('success', 'Articolo eliminato.');
     }
 
+    /**
+     * Controllo autorizzazione autore/admin
+     */
     private function authorizeArticle(Article $article): void
     {
-        if (Auth::id() !== $article->user_id && !Auth::user()->is_admin) {
-            abort(403, 'Non sei autorizzato.');
+        if (Auth::id() !== $article->user_id && !Auth::user()?->is_admin) {
+            abort(403);
         }
     }
 }

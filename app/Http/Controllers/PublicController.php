@@ -3,25 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use Illuminate\Support\Facades\Schema;
 
 class PublicController extends Controller
 {
+    /**
+     * Homepage
+     */
     public function home()
     {
-        // Se la colonna 'is_accepted' NON esiste (es. migrations non eseguite),
-        // mostro semplicemente gli ultimi 3 articoli senza filtro.
-        if (!Schema::hasColumn('articles', 'is_accepted')) {
-            $latestArticles = Article::latest()
-                ->take(3)
-                ->get();
-        } else {
-            $latestArticles = Article::where('is_accepted', true)
-                ->latest()
-                ->take(3)
-                ->get();
-        }
+        // Mostra solo articoli ACCETTATI
+        // Gestisce correttamente anche DB vuoto
+        $latestArticles = Article::whereNotNull('is_accepted')
+            ->where('is_accepted', true)
+            ->latest()
+            ->take(3)
+            ->get();
 
         return view('home', compact('latestArticles'));
+    }
+
+    /**
+     * Lista di tutti gli articoli accettati
+     */
+    public function articles()
+    {
+        $articles = Article::whereNotNull('is_accepted')
+            ->where('is_accepted', true)
+            ->latest()
+            ->get();
+
+        return view('articles.index', compact('articles'));
+    }
+
+    /**
+     * Dettaglio singolo articolo
+     */
+    public function show(Article $article)
+    {
+        // Sicurezza: se l'articolo non è accettato → 404
+        if ($article->is_accepted !== true) {
+            abort(404);
+        }
+
+        return view('articles.show', compact('article'));
     }
 }

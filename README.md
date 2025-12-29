@@ -7,9 +7,9 @@ sistema di revisione, approvazione contenuti e area amministrativa.
 
 ---
 
-## 📰 Funzionalità principali
+##  Funzionalità principali
 
-### 👤 Area Utente
+###  Area Utente
 - Registrazione e login tramite Laravel Breeze  
 - Creazione, modifica ed eliminazione articoli  
 - Caricamento immagine articolo  
@@ -18,18 +18,18 @@ sistema di revisione, approvazione contenuti e area amministrativa.
 
 ---
 
-## 🕵️ Ruolo Revisore
+##  Ruolo Revisore
 - Accesso dedicato alla dashboard del revisore  
 - Visualizzazione degli articoli in attesa  
 - Possibilità di:
-  - ✔ Accettare l’articolo  
-  - ❌ Rifiutare l’articolo  
+  - Accettare l’articolo  
+  -  Rifiutare l’articolo  
 
 Solo dopo l'approvazione un articolo diventa pubblico sul sito.
 
 ---
 
-## 🛠 Ruolo Admin
+##  Ruolo Admin
 - Accesso all’area Admin Panel  
 - Gestione delle richieste dei nuovi revisori  
 - Possibilità di approvare o rifiutare le richieste  
@@ -37,7 +37,7 @@ Solo dopo l'approvazione un articolo diventa pubblico sul sito.
 
 ---
 
-## 🗃 Struttura del progetto
+##  Struttura del progetto
 Il progetto segue l’architettura MVC di Laravel:
 - **Models:** User, Article  
 - **Controllers:** Public, Article, Revisor, Admin  
@@ -47,7 +47,7 @@ Il progetto segue l’architettura MVC di Laravel:
 
 ---
 
-## 🚀 Tecnologie utilizzate
+##  Tecnologie utilizzate
 - **Laravel 10 / PHP 8**  
 - **Laravel Breeze** (autenticazione)  
 - **MySQL**  
@@ -56,7 +56,7 @@ Il progetto segue l’architettura MVC di Laravel:
 
 ---
 
-## 📦 Installazione (se necessario)
+##  Installazione (se necessario)
 Clona la repository e installa le dipendenze:
 
 ```bash
